@@ -20,7 +20,7 @@ app.use(
   })
 );
 
-app.use("/", router);
+app.use("/api", router);
 
 /* In the end of route or after the last route */
 app.use("*", (req, res) => {
@@ -49,4 +49,3 @@ app.use((err, req, res, next) => {
 });
 
 app.listen(port, () => console.log(`Server running on port ${port}`));
-

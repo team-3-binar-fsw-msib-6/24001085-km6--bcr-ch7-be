@@ -1,8 +1,7 @@
-const express = require("express")
-const router = express.Router()
-const voteController = require("../controller/vote")
-// const { authMiddleware } = require("../middleware/auth")
+const express = require("express");
+const router = express.Router();
+const voteController = require("../controller/vote");
 
-router.route("/").get(voteController.getVote).post(voteController.createVote)
+router.route("/").get(voteController.getVotes).post(voteController.addVote);
 
-module.exports = router
+module.exports = router;

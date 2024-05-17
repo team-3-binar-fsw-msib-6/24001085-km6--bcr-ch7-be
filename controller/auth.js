@@ -1,11 +1,16 @@
-const { register, login, googleLogin, profile } = require("../usecase/auth");
+const { getTokenFromHeaders, extractToken } = require("../helper/auth");
+const {
+  register,
+  login,
+  googleLogin,
+  profile,
+  userVote,
+} = require("../usecase/auth");
 
 exports.register = async (req, res, next) => {
   try {
-    // get the body
     const { email, password, name } = req?.body;
 
-    // get the picture
     const picture = req?.files?.picture;
 
     if (email == "" || !email) {
@@ -45,7 +50,6 @@ exports.register = async (req, res, next) => {
 
 exports.login = async (req, res, next) => {
   try {
-    // get the body
     const { email, password } = req.body;
 
     if (email == "" || !email) {
@@ -61,7 +65,6 @@ exports.login = async (req, res, next) => {
       });
     }
 
-    // login logic
     const data = await login(email, password);
 
     res.status(200).json({
@@ -75,7 +78,6 @@ exports.login = async (req, res, next) => {
 
 exports.googleLogin = async (req, res, next) => {
   try {
-    // get the body
     const { access_token } = req.body;
 
     if (!access_token) {
@@ -85,7 +87,6 @@ exports.googleLogin = async (req, res, next) => {
       });
     }
 
-    // login with google logic
     const data = await googleLogin(access_token);
 
     res.status(200).json({
@@ -99,9 +100,24 @@ exports.googleLogin = async (req, res, next) => {
 
 exports.profile = async (req, res, next) => {
   try {
-    // get user by id
-    const data = req.user;
+    const token = getTokenFromHeaders(req.headers);
+    const extractedToken = extractToken(token);
+    const data = await profile(extractedToken?.id);
 
+    res.status(200).json({
+      message: "Success",
+      data,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.userVote = async (req, res, next) => {
+  try {
+    const { id, voteId } = req.body;
+
+    const data = await userVote(id, voteId);
     res.status(200).json({
       message: "Success",
       data,

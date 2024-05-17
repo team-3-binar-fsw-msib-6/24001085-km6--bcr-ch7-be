@@ -1,11 +1,11 @@
-const voteRepo = require("../../repository/vote")
+const voteRepo = require("../../repository/vote");
 
 exports.getVotes = async () => {
-  const data = await voteRepo.getVotes()
-  return data
-}
+  const data = await voteRepo.getVotes();
+  return data;
+};
 
-exports.createVote = async (payload) => {
-  const data = await voteRepo.createVote(payload)
-  return data
-}
+exports.addVote = async (id) => {
+  const data = await voteRepo.addVote(id);
+  return data;
+};

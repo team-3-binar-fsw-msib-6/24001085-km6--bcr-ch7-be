@@ -8,20 +8,15 @@ const { getData, setData } = require("../../helper/redis");
 
 exports.createUser = async (payload) => {
   try {
-    // encrypt the password
     payload.password = bcrypt.hashSync(payload.password, 10);
 
     if (payload.picture) {
-      // upload picture to cloudinary
       const { picture } = payload;
 
-      // make unique filename -> 213123128uasod9as8djas
       picture.publicId = crypto.randomBytes(16).toString("hex");
 
-      // rename the file -> 213123128uasod9as8djas.jpg / 213123128uasod9as8djas.png
       picture.name = `${picture.publicId}${path.parse(picture.name).ext}`;
 
-      // Process to upload picture
       const pictureUpload = await uploader(picture);
       payload.picture = pictureUpload.secure_url;
     }
@@ -30,10 +25,8 @@ exports.createUser = async (payload) => {
       payload.picture = payload?.image;
     }
 
-    // save to db
     const data = await user.create(payload);
 
-    // save to redis (email and id)
     const keyID = `user:${data.id}`;
     await setData(keyID, data, 300);
 
@@ -50,20 +43,17 @@ exports.createUser = async (payload) => {
 exports.getUserByID = async (id) => {
   const key = `user:${id}`;
 
-  // get from redis
   let data = await getData(key);
   if (data) {
     return data;
   }
 
-  // get from db
   data = await user.findAll({
     where: {
       id,
     },
   });
   if (data.length > 0) {
-    // save to redis
     await setData(key, data[0], 300);
 
     return data[0];
@@ -74,21 +64,17 @@ exports.getUserByID = async (id) => {
 
 exports.getUserByEmail = async (email, returnError) => {
   const key = `user:${email}`;
-
-  // get from redis
   let data = await getData(key);
   if (data) {
     return data;
   }
 
-  // get from db
   data = await user.findAll({
     where: {
       email,
     },
   });
   if (data.length > 0) {
-    // save to redis
     await setData(key, data[0], 300);
 
     return data[0];
@@ -99,6 +85,20 @@ exports.getUserByEmail = async (email, returnError) => {
   }
 
   return null;
+};
+
+exports.userVote = async (id, voteId) => {
+  const key = `user:${id}`;
+  const selectedUser = await user.findOne({ where: { id } });
+
+  if (selectedUser) {
+    const updatedUser = await selectedUser.update({ ...user, vote: voteId });
+    await setData(key, updatedUser, 300);
+
+    return updatedUser;
+  }
+
+  throw new Error(`User is not found!`);
 };
 
 exports.getGoogleAccessTokenData = async (accessToken) => {

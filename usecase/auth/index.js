@@ -5,16 +5,15 @@ const {
   getUserByEmail,
   getUserByID,
   getGoogleAccessTokenData,
+  userVote,
 } = require("../../repository/user");
 const { createToken } = require("./util");
 
 exports.register = async (payload) => {
   let user = await createUser(payload);
 
-  // Delete object password from user
   delete user.dataValues.password;
 
-  // Create token
   const jwtPayload = {
     id: user.id,
   };
@@ -23,7 +22,6 @@ exports.register = async (payload) => {
     expiresIn: "1h",
   });
 
-  // return the user data and the token
   const data = {
     user,
     token,
@@ -33,19 +31,16 @@ exports.register = async (payload) => {
 };
 
 exports.login = async (email, password) => {
-  // get the user
   let user = await getUserByEmail(email);
   if (!user) {
     throw new Error(`User is not found!`);
   }
 
-  // compare the password
   const isValid = await bcrypt.compare(password, user?.password);
   if (!isValid) {
     throw new Error(`Wrong password!`);
   }
 
-  // delete password
   if (user?.dataValues?.password) {
     delete user?.dataValues?.password;
   } else {
@@ -61,7 +56,6 @@ exports.login = async (email, password) => {
     expiresIn: "1h",
   });
 
-  // return the user data and the token
   const data = {
     user,
     token,
@@ -71,15 +65,11 @@ exports.login = async (email, password) => {
 };
 
 exports.googleLogin = async (accessToken) => {
-  // validate the token and get the data from google
   const googleData = await getGoogleAccessTokenData(accessToken);
 
-  // get is there any existing user with the email
   let user = await getUserByEmail(googleData?.email);
 
-  // if not found
   if (!user) {
-    // Create new user based on google data that get by access_token
     user = await createUser({
       email: googleData?.email,
       password: "",
@@ -88,23 +78,35 @@ exports.googleLogin = async (accessToken) => {
     });
   }
 
-  // Delete object password from user
   delete user?.dataValues?.password;
 
-  // create token
   const data = createToken(user);
 
   return data;
 };
 
 exports.profile = async (id) => {
-  // get the user
   let data = await getUserByID(id);
   if (!data) {
     throw new Error(`User is not found!`);
   }
 
-  // delete password
+  if (data?.dataValues?.password) {
+    delete data?.dataValues?.password;
+  } else {
+    delete data?.password;
+  }
+
+  return data;
+};
+
+exports.userVote = async (id, voteId) => {
+  let data = await userVote(id, voteId);
+
+  if (!data) {
+    throw new Error(`User is not found!`);
+  }
+
   if (data?.dataValues?.password) {
     delete data?.dataValues?.password;
   } else {

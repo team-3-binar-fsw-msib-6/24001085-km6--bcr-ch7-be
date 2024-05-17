@@ -16,6 +16,7 @@ module.exports = {
       email: {
         allowNull: false,
         type: Sequelize.STRING,
+        unique: true,
       },
       password: {
         allowNull: false,
@@ -24,18 +25,19 @@ module.exports = {
       picture: {
         type: Sequelize.TEXT,
       },
-      role: {
-        type: Sequelize.ENUM("user", "admin"),
-        allowNull: false,
-        defaultValue: "user",
+      vote: {
+        type: Sequelize.INTEGER,
+        allowNull: true,
       },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE,
+        defaultValue: Sequelize.fn("NOW"),
       },
       updatedAt: {
         allowNull: false,
         type: Sequelize.DATE,
+        defaultValue: Sequelize.fn("NOW"),
       },
       deletedAt: {
         allowNull: true,

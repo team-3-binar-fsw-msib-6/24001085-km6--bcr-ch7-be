@@ -1,5 +1,5 @@
-"use strict"
-const { Model } = require("sequelize")
+"use strict";
+const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
   class vote extends Model {
     /**
@@ -13,14 +13,14 @@ module.exports = (sequelize, DataTypes) => {
   }
   vote.init(
     {
-      email: DataTypes.STRING,
-      vote: DataTypes.ENUM("1", "2", "3"),
+      label: DataTypes.STRING,
+      votes: DataTypes.INTEGER,
     },
     {
       sequelize,
       modelName: "vote",
-      tableName: "vote",
+      paranoid: true,
     }
-  )
-  return vote
-}
+  );
+  return vote;
+};

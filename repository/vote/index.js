@@ -1,11 +1,19 @@
-const { vote } = require("../../models")
+const { vote } = require("../../models");
 
 exports.getVotes = async () => {
-  const data = await vote.findAll()
-  return data
-}
+  const data = await vote.findAll({
+    order: [["id", "ASC"]],
+  });
+  return data;
+};
 
-exports.createVote = async (payload) => {
-  const data = await vote.create(payload)
-  return data
-}
+exports.addVote = async (id) => {
+  const votes = await vote.findOne({ where: { id } });
+
+  if (votes) {
+    const updatedVotes = await votes.increment("votes", { by: 1 });
+    return updatedVotes;
+  }
+
+  throw new Error("Vote id not found!");
+};

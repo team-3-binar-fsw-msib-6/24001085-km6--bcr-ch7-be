@@ -1,33 +1,26 @@
 require("dotenv").config()
 
-const express = require("express")
-const bodyParser = require("body-parser")
-const cors = require("cors")
-const router = require("./route")
+const express = require("express");
+const fileUpload = require("express-fileupload");
+const router = require("./route");
+const bodyParser = require("body-parser");
+const cors = require("cors");
 
 const http = require("http")
 const { Server } = require("socket.io")
 
+
 const app = express()
-app.use(express.static("public"))
-
+const port = process.env.PORT || 3000
+app.use(cors())
+app.use(express.json());
+app.use(
+  fileUpload({
+    useTempFiles: true,
+    tempFileDir: process.env.NODE_ENV == "development" ? "./tmp" : "/tmp", // if you're using GCP App Engine please don't comment this, because the ./tmp directory is read only and we need write too so we use /tmp
+  })
+);
 const server = http.createServer(app)
-
-const port = process.env.PORT || 4000
-
-const { Sequelize } = require("sequelize")
-
-const sequelize = new Sequelize(
-  process.env.POSTGRES_DATABASE,
-  process.env.POSTGRES_USERNAME,
-  process.env.POSTGRES_PASSWORD,
-  {
-    host: process.env.POSTGRES_HOST,
-    dialect: "postgres",
-  }
-)
-
-const Vote = require("./models/vote")(sequelize, Sequelize)
 
 const io = new Server(server, {
   cors: {
@@ -58,19 +51,31 @@ io.on("connection", async (socket) => {
   })
 })
 
-app.use(cors())
-
-app.use(express.json()) // body -> json
-
-app.use("/", router)
+app.use("/api", router);
 
 app.use("*", (req, res) => {
   res.status(404).json({
     data: null,
     message: "Route not found",
-  })
-})
+  });
+});
 
-server.listen(port, () => {
-  console.log("Server is running on port " + port)
-})
+// Error middleware
+app.use((err, req, res, next) => {
+  let statusCode = 500;
+  let message = "Internal Server Error";
+
+  if (err.statusCode) {
+    statusCode = err.statusCode;
+  }
+  if (err.message) {
+    message = err.message;
+  }
+
+  res.status(statusCode).json({
+    data: null,
+    message,
+  });
+});
+
+app.listen(port, () => console.log(`Server running on port ${port}`));

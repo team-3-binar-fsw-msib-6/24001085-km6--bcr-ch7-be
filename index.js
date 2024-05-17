@@ -66,11 +66,16 @@ io.on("connection", async (socket) => {
   console.log(socket.id + " connected!");
   const votes = await voteUsecase.getVotes();
 
-  io.emit("update", votes);
+  io.sockets.emit("update", votes);
+  socket.broadcast.emit("update", votes);
+  // io.emit("update", votes);
 
   socket.on("vote", async () => {
     const votes = await voteUsecase.getVotes();
-    io.emit("update", votes);
+    io.sockets.emit("update", votes);
+    socket.broadcast.emit("update", votes);
+
+    // io.emit("update", votes);
   });
 });
 

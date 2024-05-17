@@ -1,10 +1,10 @@
-require("dotenv").config()
+require("dotenv").config();
+const fileUpload = require("express-fileupload");
+const cors = require("cors");
+const bodyParser = require("body-parser");
 
 const express = require("express");
-const fileUpload = require("express-fileupload");
 const router = require("./route");
-const bodyParser = require("body-parser");
-const cors = require("cors");
 
 const http = require("http")
 const { Server } = require("socket.io")
